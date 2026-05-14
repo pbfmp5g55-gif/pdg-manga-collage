@@ -87,7 +87,11 @@ add_executable(pdg-collage
     src/app/compositor.cpp
     src/app/postfx.cpp
     src/app/exporter.cpp
+    src/app/file_dialog.cpp
 )
+if(WIN32)
+    target_link_libraries(pdg-collage PRIVATE comdlg32)
+endif()
 target_link_libraries(pdg-collage PRIVATE vj imgui stb)
 target_include_directories(pdg-collage PRIVATE src)
 

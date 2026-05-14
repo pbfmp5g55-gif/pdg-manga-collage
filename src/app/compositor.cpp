@@ -1,5 +1,6 @@
 #include "app/compositor.h"
 #include "app/assets.h"
+#include "app/file_dialog.h"
 #include "app/renderer.h"
 
 #include <imgui.h>
@@ -7,12 +8,32 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <filesystem>
 #include <random>
 
 namespace pdg {
 
+namespace fs = std::filesystem;
+
 namespace {
 constexpr float kTwoPi = 6.28318530718f;
+
+// Copy `srcPaths` into `assets/<subdir>/`, creating the dir if needed.
+// Returns the count of successful copies.
+int importInto(const std::vector<std::string>& srcPaths,
+               const std::string& subdir) {
+    fs::path dir = fs::path("assets") / subdir;
+    std::error_code ec;
+    fs::create_directories(dir, ec);
+    int n = 0;
+    for (auto& src : srcPaths) {
+        fs::path s(src);
+        fs::path d = dir / s.filename();
+        fs::copy_file(s, d, fs::copy_options::overwrite_existing, ec);
+        if (!ec) ++n;
+    }
+    return n;
+}
 }
 
 void Compositor::generate(AssetLibrary& lib, int W, int H) {
@@ -84,6 +105,26 @@ void Compositor::Draw(AssetLibrary& lib) {
     ImGui::SameLine();
     ImGui::TextDisabled("(%zu photos, %zu manga)",
                         lib.photos().size(), lib.manga().size());
+
+    if (ImGui::Button("+ photos...")) {
+        auto picks = OpenFiles("Image files",
+                               "*.png;*.jpg;*.jpeg;*.bmp;*.tga");
+        if (!picks.empty()) {
+            int n = importInto(picks, "photos");
+            std::fprintf(stderr, "[compose] imported %d photos\n", n);
+            lib.Scan();
+        }
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("+ manga (no edit)...")) {
+        auto picks = OpenFiles("Image files",
+                               "*.png;*.jpg;*.jpeg;*.bmp;*.tga");
+        if (!picks.empty()) {
+            int n = importInto(picks, "manga/character");
+            std::fprintf(stderr, "[compose] imported %d manga panels\n", n);
+            lib.Scan();
+        }
+    }
 
     ImGui::Separator();
     ImGui::Text("Background");

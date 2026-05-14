@@ -1,4 +1,5 @@
 #include "panel_editor.h"
+#include "app/file_dialog.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -162,9 +163,15 @@ void PanelEditor::Draw(bool* p_open) {
         return;
     }
 
+    if (ImGui::Button("Open image...")) {
+        std::string p = OpenFile("Image files",
+                                 "*.png;*.jpg;*.jpeg;*.bmp;*.tga");
+        if (!p.empty()) LoadFromPath(p);
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(or drag onto window)");
+
     if (m_src.gl_tex == 0) {
-        ImGui::TextWrapped(
-            "Drag an image (PNG / JPG / BMP / TGA) onto the window to load.");
         if (m_status[0]) {
             ImGui::Separator();
             ImGui::TextWrapped("%s", m_status);
