@@ -1,0 +1,30 @@
+build/
+build-*/
+out/
+.cache/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+CMakeUserPresets.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local assets the user drops in but shouldn't commit
+assets/local/
+*.png
+*.jpg
+*.jpeg
+*.psd
+*.ai
+!design/*.png
+!design/*.jpg
+
+# Output
+exports/
+*.log
+imgui.ini
