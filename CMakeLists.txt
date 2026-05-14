@@ -81,6 +81,10 @@ add_executable(pdg-collage
     src/app/main.cpp
     src/app/panel_editor.cpp
     src/app/stb_impl.cpp
+    src/app/gl_loader.cpp
+    src/app/renderer.cpp
+    src/app/assets.cpp
+    src/app/compositor.cpp
 )
 target_link_libraries(pdg-collage PRIVATE vj imgui stb)
 target_include_directories(pdg-collage PRIVATE src)
