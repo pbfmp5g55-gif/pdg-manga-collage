@@ -46,6 +46,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
+# stb (header-only): stb_image for PNG/JPG load, stb_image_write for PNG out.
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG        master
+)
+FetchContent_MakeAvailable(stb)
+add_library(stb INTERFACE)
+target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
+
 add_library(imgui STATIC
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/imgui_draw.cpp
@@ -69,8 +79,10 @@ target_link_libraries(imgui PUBLIC OpenGL::GL)
 # ---------------------------------------------------------------------------
 add_executable(pdg-collage
     src/app/main.cpp
+    src/app/panel_editor.cpp
+    src/app/stb_impl.cpp
 )
-target_link_libraries(pdg-collage PRIVATE vj imgui)
+target_link_libraries(pdg-collage PRIVATE vj imgui stb)
 target_include_directories(pdg-collage PRIVATE src)
 
 if(MINGW)

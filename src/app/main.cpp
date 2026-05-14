@@ -5,10 +5,17 @@
 
 #include <cstdio>
 
+#include "app/panel_editor.h"
+
 namespace {
 
 void glfwErrorCallback(int err, const char* msg) {
     std::fprintf(stderr, "[glfw] error %d: %s\n", err, msg);
+}
+
+void dropCallback(GLFWwindow* win, int count, const char** paths) {
+    auto* editor = static_cast<pdg::PanelEditor*>(glfwGetWindowUserPointer(win));
+    if (editor) editor->OnDrop(count, paths);
 }
 
 }  // namespace
@@ -23,17 +30,23 @@ int main(int, char**) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
     GLFWwindow* win = glfwCreateWindow(
-        1280, 720, "pdg-manga-collage (M1)", nullptr, nullptr);
+        1280, 720, "pdg-manga-collage (M2)", nullptr, nullptr);
     if (!win) { glfwTerminate(); return 1; }
 
     glfwMakeContextCurrent(win);
     glfwSwapInterval(1);
+
+    pdg::PanelEditor editor;
+    glfwSetWindowUserPointer(win, &editor);
+    glfwSetDropCallback(win, dropCallback);
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(win, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
+
+    bool showEditor = true;
 
     while (!glfwWindowShouldClose(win)) {
         glfwPollEvents();
@@ -44,10 +57,15 @@ int main(int, char**) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("pdg-manga-collage");
-        ImGui::Text("M1: window + ImGui skeleton");
-        ImGui::Text("Next: M2 panel editor, M3 4-layer compose, M4 manga effects, M5 print export");
-        ImGui::End();
+        if (ImGui::BeginMainMenuBar()) {
+            if (ImGui::BeginMenu("View")) {
+                ImGui::MenuItem("Panel Editor", nullptr, &showEditor);
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
+
+        if (showEditor) editor.Draw(&showEditor);
 
         ImGui::Render();
         int w, h;
