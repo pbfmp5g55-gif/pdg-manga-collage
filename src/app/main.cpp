@@ -5,8 +5,11 @@
 
 #include <cstdio>
 
+#include <vector>
+
 #include "app/assets.h"
 #include "app/compositor.h"
+#include "app/exporter.h"
 #include "app/gl_loader.h"
 #include "app/panel_editor.h"
 #include "app/postfx.h"
@@ -20,8 +23,10 @@ struct AppState {
     pdg::Compositor     compositor;
     pdg::SpriteRenderer renderer;
     pdg::PostFx         postfx;
+    pdg::ExportPanel    exporter;
     bool showCompose = true;
     bool showPostFx  = true;
+    bool showExport  = true;
     bool showEditor  = false;
 };
 
@@ -97,6 +102,14 @@ int main(int, char**) {
         // 2) Composite to default framebuffer with effect.
         app.postfx.EndCaptureAndDraw(w, h);
 
+        // 2.5) If user clicked Save, read the post-effect framebuffer.
+        if (app.exporter.ShouldExport()) {
+            std::vector<unsigned char> px((size_t)w * h * 4);
+            glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, px.data());
+            app.exporter.SavePNG(px.data(), w, h);
+            app.exporter.ConsumeExport();
+        }
+
         // 3) ImGui on top.
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -106,6 +119,7 @@ int main(int, char**) {
             if (ImGui::BeginMenu("View")) {
                 ImGui::MenuItem("Compose",      nullptr, &app.showCompose);
                 ImGui::MenuItem("Post Effect",  nullptr, &app.showPostFx);
+                ImGui::MenuItem("Export",       nullptr, &app.showExport);
                 ImGui::MenuItem("Panel Editor", nullptr, &app.showEditor);
                 ImGui::EndMenu();
             }
@@ -114,6 +128,7 @@ int main(int, char**) {
 
         if (app.showCompose) app.compositor.Draw(app.library);
         if (app.showPostFx)  app.postfx.Draw();
+        if (app.showExport)  app.exporter.Draw();
         if (app.showEditor)  app.editor.Draw(&app.showEditor);
 
         ImGui::Render();

@@ -86,6 +86,7 @@ add_executable(pdg-collage
     src/app/assets.cpp
     src/app/compositor.cpp
     src/app/postfx.cpp
+    src/app/exporter.cpp
 )
 target_link_libraries(pdg-collage PRIVATE vj imgui stb)
 target_include_directories(pdg-collage PRIVATE src)
