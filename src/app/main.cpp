@@ -9,6 +9,7 @@
 #include "app/compositor.h"
 #include "app/gl_loader.h"
 #include "app/panel_editor.h"
+#include "app/postfx.h"
 #include "app/renderer.h"
 
 namespace {
@@ -18,8 +19,10 @@ struct AppState {
     pdg::AssetLibrary   library;
     pdg::Compositor     compositor;
     pdg::SpriteRenderer renderer;
-    bool showEditor   = false;
-    bool showCompose  = true;
+    pdg::PostFx         postfx;
+    bool showCompose = true;
+    bool showPostFx  = true;
+    bool showEditor  = false;
 };
 
 void glfwErrorCallback(int err, const char* msg) {
@@ -43,7 +46,7 @@ int main(int, char**) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
     GLFWwindow* win = glfwCreateWindow(
-        1280, 720, "pdg-manga-collage (M3)", nullptr, nullptr);
+        1280, 720, "pdg-manga-collage (M4)", nullptr, nullptr);
     if (!win) { glfwTerminate(); return 1; }
 
     glfwMakeContextCurrent(win);
@@ -60,8 +63,8 @@ int main(int, char**) {
     glfwSetWindowUserPointer(win, &app);
     glfwSetDropCallback(win, dropCallback);
 
-    if (!app.renderer.Init()) {
-        std::fprintf(stderr, "[main] sprite renderer init failed\n");
+    if (!app.renderer.Init() || !app.postfx.Init()) {
+        std::fprintf(stderr, "[main] renderer / postfx init failed\n");
         glfwDestroyWindow(win);
         glfwTerminate();
         return 1;
@@ -81,13 +84,20 @@ int main(int, char**) {
 
         int w = 0, h = 0;
         glfwGetFramebufferSize(win, &w, &h);
+
+        // 1) Render scene into post-fx FBO.
+        app.postfx.BeginCapture(w, h);
         glViewport(0, 0, w, h);
-        glClearColor(0.08f, 0.08f, 0.10f, 1.0f);
+        glClearColor(0.95f, 0.95f, 0.95f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         app.compositor.RegenerateIfDirty(app.library, w, h);
         app.compositor.Render(app.renderer, app.library, w, h);
 
+        // 2) Composite to default framebuffer with effect.
+        app.postfx.EndCaptureAndDraw(w, h);
+
+        // 3) ImGui on top.
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -95,6 +105,7 @@ int main(int, char**) {
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("View")) {
                 ImGui::MenuItem("Compose",      nullptr, &app.showCompose);
+                ImGui::MenuItem("Post Effect",  nullptr, &app.showPostFx);
                 ImGui::MenuItem("Panel Editor", nullptr, &app.showEditor);
                 ImGui::EndMenu();
             }
@@ -102,6 +113,7 @@ int main(int, char**) {
         }
 
         if (app.showCompose) app.compositor.Draw(app.library);
+        if (app.showPostFx)  app.postfx.Draw();
         if (app.showEditor)  app.editor.Draw(&app.showEditor);
 
         ImGui::Render();
@@ -110,6 +122,7 @@ int main(int, char**) {
         glfwSwapBuffers(win);
     }
 
+    app.postfx.Shutdown();
     app.renderer.Shutdown();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

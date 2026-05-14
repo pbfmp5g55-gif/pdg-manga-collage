@@ -41,6 +41,15 @@ typedef ptrdiff_t GLsizeiptr_compat;
 #ifndef GL_CLAMP_TO_EDGE
 #define GL_CLAMP_TO_EDGE      0x812F
 #endif
+#ifndef GL_FRAMEBUFFER
+#define GL_FRAMEBUFFER        0x8D40
+#endif
+#ifndef GL_COLOR_ATTACHMENT0
+#define GL_COLOR_ATTACHMENT0  0x8CE0
+#endif
+#ifndef GL_FRAMEBUFFER_COMPLETE
+#define GL_FRAMEBUFFER_COMPLETE 0x8CD5
+#endif
 
 #ifdef _WIN32
 #define PDGGL_APIENTRY __stdcall
@@ -77,6 +86,11 @@ typedef void   (PDGGL_APIENTRY *PFN_glBufferData)(GLenum, GLsizeiptr_compat, con
 typedef void   (PDGGL_APIENTRY *PFN_glVertexAttribPointer)(GLuint, GLint, GLenum, GLboolean, GLsizei, const void*);
 typedef void   (PDGGL_APIENTRY *PFN_glEnableVertexAttribArray)(GLuint);
 typedef void   (PDGGL_APIENTRY *PFN_glActiveTexture)(GLenum);
+typedef void   (PDGGL_APIENTRY *PFN_glGenFramebuffers)(GLsizei, GLuint*);
+typedef void   (PDGGL_APIENTRY *PFN_glDeleteFramebuffers)(GLsizei, const GLuint*);
+typedef void   (PDGGL_APIENTRY *PFN_glBindFramebuffer)(GLenum, GLuint);
+typedef void   (PDGGL_APIENTRY *PFN_glFramebufferTexture2D)(GLenum, GLenum, GLenum, GLuint, GLint);
+typedef GLenum (PDGGL_APIENTRY *PFN_glCheckFramebufferStatus)(GLenum);
 
 extern PFN_glCreateShader            pdggl_CreateShader;
 extern PFN_glShaderSource            pdggl_ShaderSource;
@@ -107,5 +121,10 @@ extern PFN_glBufferData              pdggl_BufferData;
 extern PFN_glVertexAttribPointer     pdggl_VertexAttribPointer;
 extern PFN_glEnableVertexAttribArray pdggl_EnableVertexAttribArray;
 extern PFN_glActiveTexture           pdggl_ActiveTexture;
+extern PFN_glGenFramebuffers         pdggl_GenFramebuffers;
+extern PFN_glDeleteFramebuffers      pdggl_DeleteFramebuffers;
+extern PFN_glBindFramebuffer         pdggl_BindFramebuffer;
+extern PFN_glFramebufferTexture2D    pdggl_FramebufferTexture2D;
+extern PFN_glCheckFramebufferStatus  pdggl_CheckFramebufferStatus;
 
 bool pdgglLoad();

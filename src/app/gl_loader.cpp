@@ -32,6 +32,11 @@ PFN_glBufferData              pdggl_BufferData              = nullptr;
 PFN_glVertexAttribPointer     pdggl_VertexAttribPointer     = nullptr;
 PFN_glEnableVertexAttribArray pdggl_EnableVertexAttribArray = nullptr;
 PFN_glActiveTexture           pdggl_ActiveTexture           = nullptr;
+PFN_glGenFramebuffers         pdggl_GenFramebuffers         = nullptr;
+PFN_glDeleteFramebuffers      pdggl_DeleteFramebuffers      = nullptr;
+PFN_glBindFramebuffer         pdggl_BindFramebuffer         = nullptr;
+PFN_glFramebufferTexture2D    pdggl_FramebufferTexture2D    = nullptr;
+PFN_glCheckFramebufferStatus  pdggl_CheckFramebufferStatus  = nullptr;
 
 namespace {
 template <typename T>
@@ -76,5 +81,10 @@ bool pdgglLoad() {
     pdggl_VertexAttribPointer     = fetch<PFN_glVertexAttribPointer>("glVertexAttribPointer", ok);
     pdggl_EnableVertexAttribArray = fetch<PFN_glEnableVertexAttribArray>("glEnableVertexAttribArray", ok);
     pdggl_ActiveTexture           = fetch<PFN_glActiveTexture>("glActiveTexture", ok);
+    pdggl_GenFramebuffers         = fetch<PFN_glGenFramebuffers>("glGenFramebuffers", ok);
+    pdggl_DeleteFramebuffers      = fetch<PFN_glDeleteFramebuffers>("glDeleteFramebuffers", ok);
+    pdggl_BindFramebuffer         = fetch<PFN_glBindFramebuffer>("glBindFramebuffer", ok);
+    pdggl_FramebufferTexture2D    = fetch<PFN_glFramebufferTexture2D>("glFramebufferTexture2D", ok);
+    pdggl_CheckFramebufferStatus  = fetch<PFN_glCheckFramebufferStatus>("glCheckFramebufferStatus", ok);
     return ok;
 }
